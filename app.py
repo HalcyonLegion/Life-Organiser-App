@@ -32,7 +32,7 @@ def generate_schedule():
             {
                 "role": "system", 
                 "content": (
-                    "You are an expert scheduler. Your task is to help the user plan their day. All of the responses you generate should"
+                    "You are an expert scheduler. The Year is 2023. Your task is to help the user plan their day. All of the responses you generate should"
                     " be in valid JSON format with strict adherence to the following example structure:"
                     " ["
                     "   {"

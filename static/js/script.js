@@ -103,13 +103,21 @@ function generateMonthView(className) {
         deleteEventLocalStorage(calEvent);
       }
     },
-    // Handle event drag and drop
-    eventDrop: function(event, delta, revertFunc) {
-      updateEventLocalStorage(event);
-    },
-    eventResize: function(event, delta, revertFunc) {
-      updateEventLocalStorage(event);
-    },
+// eventDrop function:
+eventDrop: function(event, delta, revertFunc) {
+  // event.start and event.end are moment instances, convert them to string
+  event.start = event.start.format("YYYY-MM-DDTHH:mm:ss");
+  event.end = event.end.format("YYYY-MM-DDTHH:mm:ss");
+  updateEventLocalStorage(event);
+},
+
+// eventResize function:
+eventResize: function(event, delta, revertFunc) {
+  // event.start and event.end are moment instances, convert them to string
+  event.start = event.start.format("YYYY-MM-DDTHH:mm:ss");
+  event.end = event.end.format("YYYY-MM-DDTHH:mm:ss");
+  updateEventLocalStorage(event);
+},
     dayClick: function(date, jsEvent, view) {
       var eventTitle = prompt("Enter event title:");
       if (eventTitle) {
@@ -117,8 +125,8 @@ function generateMonthView(className) {
         var endTime = prompt("Enter end time (24-hour format, e.g., 15:45):");
     
         if (startTime && endTime) {
-          var startDateTime = date.format("YYYY-MM-DD") + "T" + startTime;
-          var endDateTime = date.format("YYYY-MM-DD") + "T" + endTime;
+          var startDateTime = date.format("YYYY-MM-DD") + "T" + startTime + ":00"; 
+          var endDateTime = date.format("YYYY-MM-DD") + "T" + endTime + ":00";
     
           calendarContainer.fullCalendar("renderEvent", {
             title: eventTitle,
@@ -126,11 +134,14 @@ function generateMonthView(className) {
             end: endDateTime
           });
 
-          saveEvent({
+          var newEvent = {
             title: eventTitle,
             start: startDateTime,
             end: endDateTime
-          });
+          };
+          calendarContainer.fullCalendar("renderEvent", newEvent);
+          // ...then save it to local storage.
+          saveEvent(newEvent);
         }
       } else {
         alert("Please enter valid start and end times.");
@@ -140,6 +151,8 @@ function generateMonthView(className) {
 
   return calendarContainer;
 }
+
+
 
 function saveEvent(eventData) {
   var events = JSON.parse(localStorage.getItem("monthlySchedulerEvents") || "[]");
@@ -172,34 +185,22 @@ function deleteEventLocalStorage(eventData) {
 }
 
 $(document).ready(function () {
-  $("#scheduleForm").on("submit", async function (event) {
-    event.preventDefault();
-
-    const data = $(this).serializeArray().reduce((obj, item) => {
-      obj[item.name] = item.value;
-      return obj;
-    }, {});
-    const userPrompt = data.userPrompt;
-
-    const scheduleLines = await fetchSchedule(userPrompt);
-     // Add this line to log the raw API response
-    console.log("Raw API Response:", scheduleLines);
-    const cleanedResponse = cleanApiResponse(scheduleLines);
-    const parsedEvents = parseSchedule(cleanedResponse);
-
-    calendarContainer.fullCalendar('addEventSource', parsedEvents);
-    calendarContainer.fullCalendar('refetchEvents');
-  });
-
   let calendarContainer = generateMonthView("#calendarContainer");
 
   $("#currentDay").text("Today is: " + moment().format("dddd, MMMM Do, YYYY"));
 
   // Save events to local storage when save button is clicked
-  $(".saveBtn").on("click", function () {
-    var hour = $(this).data("hour");
-    var plannerText = $("#hour-" + hour).val();
-    localStorage.setItem("hour-" + hour, plannerText);
+  $("#saveToLocalStorage").on('click', function() {
+    const events = calendarContainer.fullCalendar('clientEvents');
+    events.forEach(event => {
+      let eventData = {
+        start: moment(event.start).format("YYYYMMDDTHHmmss"),
+        end: moment(event.end).format("YYYYMMDDTHHmmss"),
+        title: event.title
+      };
+      saveEvent(eventData); 
+    });
+    console.log("Events saved to Local Storage:", JSON.parse(localStorage.getItem("monthlySchedulerEvents")));
   });
 
   $("#resetBtn").on("click", function() {
@@ -211,9 +212,7 @@ $(document).ready(function () {
     calendarContainer.fullCalendar("removeEvents");
     localStorage.removeItem("monthlySchedulerEvents");
   });
-});
 
-$(document).ready(function () {
   $("#scheduleForm").on("submit", async function (event) {
     event.preventDefault();
     // disable the generate schedule button and provide a visual feedback like changing the button text
@@ -221,23 +220,67 @@ $(document).ready(function () {
     generateScheduleBtn.disabled = true;
     generateScheduleBtn.textContent = "Generating Schedule...";
 
-    const data = $(this).serializeArray().reduce((obj, item) => {
-      obj[item.name] = item.value;
-      return obj;
-    }, {});
-    const userPrompt = data.userPrompt;
-
-    const scheduleLines = await fetchSchedule(userPrompt);
-     // Add this line to log the raw API response
-    console.log("Raw API Response:", scheduleLines);
-    const cleanedResponse = cleanApiResponse(scheduleLines);
-    const parsedEvents = parseSchedule(cleanedResponse);
-
-    calendarContainer.fullCalendar('addEventSource', parsedEvents);
-    calendarContainer.fullCalendar('refetchEvents');
-
-    // enable the generate schedule button again and change the text back to original
-    generateScheduleBtn.disabled = false;
-    generateScheduleBtn.textContent = "Generate Schedule";
+    // change the mouse cursor to a loading spinner
+    document.body.style.cursor = 'wait';
+  
+    try {
+      const data = $(this).serializeArray().reduce((obj, item) => {
+        obj[item.name] = item.value;
+        return obj;
+      }, {});
+      const userPrompt = data.userPrompt;
+    
+      const scheduleLines = await fetchSchedule(userPrompt);
+      const cleanedResponse = cleanApiResponse(scheduleLines);
+      const parsedEvents = parseSchedule(cleanedResponse);
+    
+      calendarContainer.fullCalendar('addEventSource', parsedEvents);
+      calendarContainer.fullCalendar('refetchEvents');
+    } catch (error) {
+      console.error("Error:", error);
+      document.getElementById("errorMessage").style.display = "block";
+      document.getElementById("errorMessage").innerText = "An error occurred during the process: " + error.message;  
+    } finally {
+      // enable the generate schedule button again and change the text back to original
+      generateScheduleBtn.disabled = false;
+      generateScheduleBtn.textContent = "Generate Schedule";
+    
+      // change the mouse cursor back to default
+      document.body.style.cursor = 'default';
+    }
   });
+});
+
+$("#exportToIcs").on('click', function() {
+  console.log("Export to ICS button clicked, starting to export the data...");
+
+  const events = JSON.parse(localStorage.getItem("monthlySchedulerEvents") || "[]");
+
+  // Log the events that are fetched from localStorage
+  console.log("Events from LocalStorage:", events);
+
+  if(!events.length) {
+     console.log('No events to export.');
+     return;
+  }
+
+  // Export events if ICS library is available
+  if(ics !== undefined){
+      const cal = ics();
+      if(cal !== undefined){
+          events.forEach(event => {
+              const start = new Date(event.start);
+              const end = new Date(event.end);
+              const title = event.title;
+              cal.addEvent(title, '', '', start, end);
+          });
+
+          cal.download('my_schedule');
+          console.log("ICS file has been created and triggered to download.");
+      } else {
+          console.log("Unable to initialize the ICS library.");
+      }
+  } else {
+      console.log("ICS library not found.");
+  }
 });

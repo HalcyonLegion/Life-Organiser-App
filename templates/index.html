@@ -52,6 +52,10 @@
     </div>
 
     <div class="container my-5 text-center">
+      <button class="btn btn-primary" id="saveToLocalStorage">Save to Local Storage for Export</button>
+    </div>
+
+    <div class="container my-5 text-center">
       <button class="btn btn-danger" id="resetBtn">Reset</button>
     </div>
 
@@ -59,7 +63,7 @@
       <button class="btn btn-success" id="exportPDF" onclick="exportToPDF()">Export to PDF</button>
       <button class="btn btn-success mx-2" id="exportCSV" onclick="exportToCSV()">Export to CSV</button>
       <button class="btn btn-success mx-2" id="exportExcel" onclick="exportToExcel()">Export to Excel</button>
-      <button class="btn btn-success" id="exportICS" onclick="exportToICS()">Export to Calendar ICS</button>
+      <button class="btn btn-success mx-2" id="exportToIcs">Export to ICS</button>
     </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
@@ -79,5 +83,7 @@
     <!-- FullCalendar JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/ics.deps.min.js') }}"></script>
   </body>
 </html>
