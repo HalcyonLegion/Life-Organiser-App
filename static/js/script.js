@@ -33,23 +33,16 @@ function parseSchedule(scheduleArray) {
   let parsedEvents = [];
 
   for (let event of scheduleArray) {
-    // check if event.day, event.startTime, and event.endTime are undefined
-    if (!event.day || !event.startTime || !event.endTime) {
-      console.error('One or more necessary event properties are undefined.', event);
+    // check if event.start and event.end are undefined
+    if (!event.start || !event.end) {
+      console.error('start and end timestamps of the event are undefined.', event);
       continue;
     }
-    
-    // build timestamps by combining day and time values
-    const startComponents = event.startTime.split(':');
-    const endTimeComponents = event.endTime.split(':');
-
-    const startDateTimeString = event.day + "T" + (startComponents.length === 2 ? event.startTime + ":00" : event.startTime);
-    const endDateTimeString = event.day + "T" + (endTimeComponents.length === 2 ? event.endTime + ":00" : event.endTime);
 
     // create JavaScript Date objects
-    const startDateTime = new Date(startDateTimeString);
-    const endDateTime = new Date(endDateTimeString);
-    
+    const startDateTime = new Date(event.start);
+    const endDateTime = new Date(event.end);
+
     // check if the Date objects created are valid
     if (isNaN(startDateTime) || isNaN(endDateTime)) {
       console.error('Invalid start or end timestamp for event.', event);
@@ -173,7 +166,22 @@ eventResize: function(event, delta, revertFunc) {
 
 function saveEvent(eventData) {
   var events = JSON.parse(localStorage.getItem("monthlySchedulerEvents") || "[]");
-  events.push(eventData);
+
+  // Check and reformat the eventData to correct ISO string format
+  const start = moment(eventData.start).isValid() ? moment(eventData.start).toISOString() : moment().format();
+  const end = moment(eventData.end).isValid() ? moment(eventData.end).toISOString() : moment().format();
+  
+  // Create the new event format
+  let newEvent = {
+    title: eventData.title,
+    start: start,
+    end: end
+  };
+
+  // Push the updated eventData to events array
+  events.push(newEvent);
+
+  // Save it into the local storage.
   localStorage.setItem("monthlySchedulerEvents", JSON.stringify(events));
 }
 
