@@ -235,7 +235,11 @@ $(document).ready(function () {
     });
     // Save events into the local storage
     localStorage.setItem("monthlySchedulerEvents", JSON.stringify(storedEvents));
-    console.log("Events saved to Local Storage:", JSON.parse(localStorage.getItem("monthlySchedulerEvents")));
+    console.log("Events saved to Local Storage, Export Ready!:", JSON.parse(localStorage.getItem("monthlySchedulerEvents")));
+
+     // Provide visual feedback
+     let feedbackElement = document.getElementById('feedback');
+     feedbackElement.innerText = "Events saved to Local Storage, Export Ready!";
   });
 
   $("#resetBtn").on("click", function() {
