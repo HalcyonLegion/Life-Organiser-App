@@ -117,7 +117,7 @@ function generateMonthView(className) {
 eventDrop: function(event, delta, revertFunc) {
   // event.start and event.end are moment instances, convert them to string
   event.start = event.start.format("YYYY-MM-DDTHH:mm:ss");
-  event.end = event.end.format("YYYY-MM-DDTHH:mm:ss");
+event.end = event.end ? event.end.format("YYYY-MM-DDTHH:mm:ss") : null;
   updateEventLocalStorage(event);
 },
 
@@ -168,8 +168,8 @@ function saveEvent(eventData) {
   var events = JSON.parse(localStorage.getItem("monthlySchedulerEvents") || "[]");
 
   // Check and reformat the eventData to correct ISO string format
-  const start = moment(eventData.start).isValid() ? moment(eventData.start).toISOString() : moment().format();
-  const end = moment(eventData.end).isValid() ? moment(eventData.end).toISOString() : moment().format();
+  const start = moment(eventData.start).isValid() ? moment(eventData.start).format('YYYY-MM-DDTHH:mm:ss') : moment().format('YYYY-MM-DDTHH:mm:ss');
+  const end = moment(eventData.end).isValid() ? moment(eventData.end).format('YYYY-MM-DDTHH:mm:ss') : moment().format('YYYY-MM-DDTHH:mm:ss');
   
   // Create the new event format
   let newEvent = {
