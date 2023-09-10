@@ -63,16 +63,14 @@
       <button class="btn btn-success mx-2" id="exportToIcs">Export to ICS</button>
     </div>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+<!-- FullCalendar Dependencies -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- FullCalendar Dependencies -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- FullCalendar JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
-    <!-- FullCalendar JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-
-    <script src="{{ url_for('static', filename='js/ics.deps.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/ics.deps.min.js') }}"></script>
   </body>
 </html>

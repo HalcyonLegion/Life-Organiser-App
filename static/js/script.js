@@ -32,20 +32,37 @@ function cleanApiResponse(responseText) {
 function parseSchedule(scheduleArray) {
   let parsedEvents = [];
 
-  if (Array.isArray(scheduleArray)) {
-    for (let event of scheduleArray) {
-      const startDateTime = new Date(event.day + "T" + event.startTime + ":00");
-      const endDateTime = new Date(event.day + "T" + event.endTime + ":00");
-
-      parsedEvents.push({
-        start: startDateTime,
-        end: endDateTime,
-        title: event.title
-      });
+  for (let event of scheduleArray) {
+    // check if event.day, event.startTime, and event.endTime are undefined
+    if (!event.day || !event.startTime || !event.endTime) {
+      console.error('One or more necessary event properties are undefined.', event);
+      continue;
     }
-  } else {
-    console.warn("The schedule property is missing or not an array.");
+    
+    // build timestamps by combining day and time values
+    const startComponents = event.startTime.split(':');
+    const endTimeComponents = event.endTime.split(':');
+
+    const startDateTimeString = event.day + "T" + (startComponents.length === 2 ? event.startTime + ":00" : event.startTime);
+    const endDateTimeString = event.day + "T" + (endTimeComponents.length === 2 ? event.endTime + ":00" : event.endTime);
+
+    // create JavaScript Date objects
+    const startDateTime = new Date(startDateTimeString);
+    const endDateTime = new Date(endDateTimeString);
+    
+    // check if the Date objects created are valid
+    if (isNaN(startDateTime) || isNaN(endDateTime)) {
+      console.error('Invalid start or end timestamp for event.', event);
+      continue;
+    }
+
+    parsedEvents.push({
+      start: startDateTime,
+      end: endDateTime,
+      title: event.title
+    });
   }
+
   console.log("Parsed events:", parsedEvents);
   return parsedEvents;
 }
@@ -192,14 +209,24 @@ $(document).ready(function () {
   // Save events to local storage when save button is clicked
   $("#saveToLocalStorage").on('click', function() {
     const events = calendarContainer.fullCalendar('clientEvents');
-    events.forEach(event => {
-      let eventData = {
-        start: moment(event.start).format("YYYYMMDDTHHmmss"),
-        end: moment(event.end).format("YYYYMMDDTHHmmss"),
-        title: event.title
+    let storedEvents = [];
+    events.forEach((event) => {
+      // Transform the dates into correct format 
+      let start = moment(event.start).format("YYYY-MM-DDTHH:mm:ss");
+      let end = (event.end) ? moment(event.end).format("YYYY-MM-DDTHH:mm:ss") : start;
+      // Add an if condition checking if `event.end` exists because a single day event may not contain an end value
+      
+      // Create new style event
+      let newEvent = {
+        title: event.title,
+        start: start,
+        end: end
       };
-      saveEvent(eventData); 
+      // Push the event data to array
+      storedEvents.push(newEvent);
     });
+    // Save events into the local storage
+    localStorage.setItem("monthlySchedulerEvents", JSON.stringify(storedEvents));
     console.log("Events saved to Local Storage:", JSON.parse(localStorage.getItem("monthlySchedulerEvents")));
   });
 
@@ -252,35 +279,28 @@ $(document).ready(function () {
 });
 
 $("#exportToIcs").on('click', function() {
-  console.log("Export to ICS button clicked, starting to export the data...");
-
   const events = JSON.parse(localStorage.getItem("monthlySchedulerEvents") || "[]");
 
-  // Log the events that are fetched from localStorage
-  console.log("Events from LocalStorage:", events);
-
-  if(!events.length) {
-     console.log('No events to export.');
-     return;
+  if (!events.length) {
+    console.log('No events to export.');
+    return;
   }
 
-  // Export events if ICS library is available
-  if(ics !== undefined){
-      const cal = ics();
-      if(cal !== undefined){
-          events.forEach(event => {
-              const start = new Date(event.start);
-              const end = new Date(event.end);
-              const title = event.title;
-              cal.addEvent(title, '', '', start, end);
-          });
+  if (ics !== undefined) {
+    const cal = ics();
+    if (cal !== undefined) {
+      events.forEach(event => {
+        
+        // Perform check for valid ISO format string or convert it to valid ISO format
+        const start = moment(event.start).isValid() ? moment(event.start).toISOString() : moment().format();
+        const end = moment(event.end).isValid() ? moment(event.end).toISOString() : moment().format();
+        const title = event.title;
 
-          cal.download('my_schedule');
-          console.log("ICS file has been created and triggered to download.");
-      } else {
-          console.log("Unable to initialize the ICS library.");
-      }
-  } else {
-      console.log("ICS library not found.");
+        cal.addEvent(title, '', '', start, end);
+      });
+
+      cal.download('my_schedule');
+      console.log("ICS file has been created and triggered to download.");
+    }
   }
 });
