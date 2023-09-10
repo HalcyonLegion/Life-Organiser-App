@@ -220,8 +220,8 @@ $(document).ready(function () {
     let storedEvents = [];
     events.forEach((event) => {
       // Transform the dates into correct format 
-      let start = moment(event.start).format("YYYY-MM-DDTHH:mm:ss");
-      let end = (event.end) ? moment(event.end).format("YYYY-MM-DDTHH:mm:ss") : start;
+      let start = moment(event.start).toISOString();
+      let end = (event.end) ? moment(event.end).toISOString() : start;
       // Add an if condition checking if `event.end` exists because a single day event may not contain an end value
       
       // Create new style event
