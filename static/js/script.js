@@ -63,14 +63,18 @@ async function fetchSchedule(prompt) {
     if (!response.ok) {
       throw new Error("Server error");
     }
-
     const jsonResponse = await response.json();
     return jsonResponse.schedule;
   } catch (error) {
     console.error("Server error:", error);
+    document.getElementById("errorMessage").style.display = "block";
+    document.getElementById("errorMessage").innerText = "An error occurred during the process: " + error.message;
     return [];
   }
 }
+
+// Hides error message, test it.
+document.getElementById("errorMessage").style.display = "none";
 
 function generateMonthView(className) {
   let calendarContainer = $(className);
@@ -206,5 +210,34 @@ $(document).ready(function () {
     // Clear localStorage for day view entries
     calendarContainer.fullCalendar("removeEvents");
     localStorage.removeItem("monthlySchedulerEvents");
+  });
+});
+
+$(document).ready(function () {
+  $("#scheduleForm").on("submit", async function (event) {
+    event.preventDefault();
+    // disable the generate schedule button and provide a visual feedback like changing the button text
+    let generateScheduleBtn = document.getElementById('generateScheduleBtn');
+    generateScheduleBtn.disabled = true;
+    generateScheduleBtn.textContent = "Generating Schedule...";
+
+    const data = $(this).serializeArray().reduce((obj, item) => {
+      obj[item.name] = item.value;
+      return obj;
+    }, {});
+    const userPrompt = data.userPrompt;
+
+    const scheduleLines = await fetchSchedule(userPrompt);
+     // Add this line to log the raw API response
+    console.log("Raw API Response:", scheduleLines);
+    const cleanedResponse = cleanApiResponse(scheduleLines);
+    const parsedEvents = parseSchedule(cleanedResponse);
+
+    calendarContainer.fullCalendar('addEventSource', parsedEvents);
+    calendarContainer.fullCalendar('refetchEvents');
+
+    // enable the generate schedule button again and change the text back to original
+    generateScheduleBtn.disabled = false;
+    generateScheduleBtn.textContent = "Generate Schedule";
   });
 });
