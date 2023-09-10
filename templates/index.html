@@ -32,10 +32,10 @@
     </header>
 
     <div class="container mt-5 mb-5">
-      <h3 class="mb-3">Enter your daily commitments</h3>
+      <h3 class="mb-3">Tell me which days you need me to schedule!</h3>
       <form id="scheduleForm" method="post" action="/generate-schedule">
         <div class="form-group">
-          <textarea class="form-control" id="userPrompt" name="userPrompt" rows="3" placeholder="Enter your commitments here..."></textarea>
+          <textarea class="form-control" id="userPrompt" name="userPrompt" rows="3" placeholder="Example: Please generate a fun schedule for the week of September 11th 2023!"></textarea>
         </div>
         <button type="submit" class="btn btn-primary" id="generateScheduleBtn">Generate Schedule</button>
       </form>
@@ -51,10 +51,11 @@
       <!-- Month view calendar will be rendered here -->
     </div>
 
-    <div class="container my-5 text-center">
+    <div class="container text-center">
       <button class="btn btn-primary" id="saveToLocalStorage">Save to Local Storage for Export</button>
     </div>
-    <div id="feedback color-green"></div>
+
+    <div id="feedback" class="container text-center text-success"></div>
 
     <div class="container my-5 text-center">
       <button class="btn btn-danger" id="resetBtn">Reset Calendar</button>
