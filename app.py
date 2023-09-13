@@ -6,16 +6,20 @@ import os
 
 app = Flask(__name__)
 
-def read_api_key_from_file():
-    try:
-        with open("openaiapikey.txt", "r") as f:
-            api_key = f.read().strip()
-            return api_key
-    except Exception as error:
-        print(f"Error reading API key from file: {error}")
-        return None
+# Replacing with environment variables
 
-openai.api_key = read_api_key_from_file()
+# def read_api_key_from_file():
+#     try:
+#         with open("openaiapikey.txt", "r") as f:
+#             api_key = f.read().strip()
+#             return api_key
+#     except Exception as error:
+#         print(f"Error reading API key from file: {error}")
+#         return None
+
+# openai.api_key = read_api_key_from_file()
+
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 @app.route("/")
 def index():
