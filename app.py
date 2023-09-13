@@ -57,4 +57,4 @@ def generate_schedule():
     return jsonify({"schedule": schedule})
 
 if __name__ == "__main__":
-    app.run(port=3001)
+    app.run(host='0.0.0.0', port=5000)
